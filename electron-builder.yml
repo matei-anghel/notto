@@ -52,7 +52,7 @@ directories:
   output: release
   buildResources: build
 
-# Windows: Unsigned builds (zero-cost distribution)
+# Windows: unsigned NSIS installer
 win:
   target:
     - nsis
@@ -120,9 +120,9 @@ nsis:
   installerIcon: icon.ico
   uninstallerIcon: icon.ico
 
-# GitHub Releases publishing (DUAL-REPO STRATEGY)
-# Source code stays in private repo, releases go to public repo
+# Releases are published to this repository's GitHub Releases.
 publish:
   provider: github
   owner: matei-anghel
-  repo: notto-releases  # <-- PUBLIC repo for downloads (create this!)
+  repo: notto
+  releaseType: release

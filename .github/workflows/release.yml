@@ -6,9 +6,9 @@ on:
       - 'v*'
 
 
-# NOTE: We use GH_TOKEN (Personal Access Token) instead of GITHUB_TOKEN
-# because we're publishing to a DIFFERENT repo (notto-releases)
-# The default GITHUB_TOKEN only has access to the current repo
+# Publishes installers to this repository's Releases with the built-in token; no secrets needed.
+permissions:
+  contents: write
 
 jobs:
   # ====================
@@ -43,22 +43,6 @@ jobs:
             sleep 20
           done
 
-      # electron-builder signs with CSC_LINK / CSC_KEY_PASSWORD. Without the secrets the build is unsigned.
-      - name: Prepare Windows code signing
-        shell: pwsh
-        env:
-          WIN_CERT_PFX_BASE64: ${{ secrets.WIN_CERT_PFX_BASE64 }}
-          WIN_CERT_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
-        run: |
-          if (-not $env:WIN_CERT_PFX_BASE64) {
-            Write-Host "No signing certificate configured; building unsigned."
-            exit 0
-          }
-          $certPath = Join-Path $env:RUNNER_TEMP "windows-signing.pfx"
-          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:WIN_CERT_PFX_BASE64))
-          "CSC_LINK=$certPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "CSC_KEY_PASSWORD=$env:WIN_CERT_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -80,7 +64,7 @@ jobs:
       - name: Build & Publish Windows
         run: npx electron-builder --win --publish always
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ====================
   # macOS Build
@@ -132,7 +116,7 @@ jobs:
       - name: Build & Publish macOS
         run: npx electron-builder --mac --publish always
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ====================
   # Linux Build
@@ -178,4 +162,4 @@ jobs:
       - name: Build & Publish Linux
         run: npx electron-builder --linux --publish always
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

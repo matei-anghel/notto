@@ -356,7 +356,7 @@ function sendProgress(message: string) {
   } catch { }
 }
 
-const UPDATE_RELEASES_URL = 'https://github.com/matei-anghel/notto-releases/releases/latest'
+const UPDATE_RELEASES_URL = 'https://github.com/matei-anghel/notto/releases/latest'
 
 const updaterController = createUpdaterController({
   sendProgress,

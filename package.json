@@ -1,7 +1,7 @@
 {
   "name": "notto",
   "productName": "Notto",
-  "version": "1.2.18",
+  "version": "0.1.0",
   "description": "Open-source AI notes, dictation and meeting assistant. Bring your own API keys or run models locally.",
   "main": "dist/main.js",
   "homepage": "https://usenotto.com",

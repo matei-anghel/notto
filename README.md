@@ -1,82 +1,118 @@
+<div align="center">
+
+<img src="logos/icon.png" width="96" alt="Notto logo">
+
 # Notto
 
-Notto is a free, open-source desktop assistant for notes, dictation and meetings. It runs on Windows, macOS and Linux, works with the AI provider of your choice, and keeps your data on your device.
+**Free, open-source AI notes, dictation and meeting assistant for your desktop.**<br>
+Bring your own API keys, or run everything locally. No account, no subscription, no cloud.
 
-- **Dictation anywhere**: hold or toggle a shortcut, speak, and the text is pasted into the app you're using.
-- **AI mode**: speak a request ("reply to this email politely") and Notto answers with your screen as context.
-- **Chat overlay**: an always-on-top AI chat with screenshots, file attachments (PDF, Word, Excel, text) and your notes as context. It can be hidden from screen sharing.
-- **Meeting notes**: record the microphone and system audio, then get a transcript and structured notes with decisions and action items.
-- **Chat with your notes**: ask a question and Notto finds the relevant meetings and notes on your device, answers from them and cites its sources.
-- **Share meeting notes**: copy as Markdown, save a `.md` file, or start an email with the notes in one click.
-- **Quick notes**: a floating notepad that's always one shortcut away.
+[![Download for Windows](https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/matei-anghel/notto/releases/latest/download/Notto-Setup.exe)
+&nbsp;
+[![Latest release](https://img.shields.io/github/v/release/matei-anghel/notto?style=for-the-badge&label=release&color=111111)](https://github.com/matei-anghel/notto/releases/latest)
+&nbsp;
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-111111?style=for-the-badge)](LICENSE)
 
-No account, no subscription, no server. You bring your own API keys and pay your provider directly, or you pay nothing by running models locally.
+<img src="docs/images/home.png" width="860" alt="Notto home screen">
 
-## AI providers
+</div>
 
-Configure providers in **Settings → AI Providers**. Notto uses up to three models: one for chat, an optional one for images and screenshots, and one for transcription.
+## What it does
+
+| | |
+|---|---|
+| 🎙️ **Dictation anywhere** | Hold or toggle a shortcut, speak, and the text is typed into whatever app you're using. |
+| ✨ **AI mode** | Speak a request ("reply to this politely") and Notto writes it for you, using your screen as context. |
+| 💬 **Chat overlay** | An always-on-top chat that understands screenshots, PDFs, Word and Excel files, and your notes. It can be hidden from screen sharing. |
+| 📝 **Meeting notes** | Records your microphone and computer audio in any meeting app, then writes a summary with decisions and action items. No bot joins your call. |
+| 🧠 **Chat with your notes** | Ask a question and Notto finds the answer across your past meetings and notes, with links to its sources. |
+| 📤 **Share meeting notes** | Copy as Markdown, save a `.md` file, or open an email with the notes in one click. |
+| 🗒️ **Quick notes** | A floating notepad that's always one shortcut away. |
+
+## Bring your own AI
+
+Pick a model for chat, an optional one for screenshots and images, and one for transcription in **Settings → AI Providers**. Keys are encrypted with your operating system's keychain and never leave your computer except to talk to the provider you chose.
 
 | Provider | Chat | Transcription |
-|---|---|---|
-| OpenAI | ✓ | ✓ (gpt-4o-transcribe, whisper-1) |
+|---|:---:|:---:|
+| OpenAI | ✓ | ✓ |
 | Anthropic (Claude) | ✓ | |
 | Google Gemini | ✓ | |
 | OpenRouter | ✓ | |
-| Groq | ✓ | ✓ (Whisper) |
-| Mistral | ✓ | ✓ (Voxtral) |
-| DeepSeek, xAI, Together, Fireworks, Cerebras, Perplexity | ✓ | Together only |
-| Deepgram | | ✓, including live streaming dictation |
-| Ollama, LM Studio (local) | ✓ | |
-| Any OpenAI-compatible server (vLLM, llama.cpp, LocalAI, speaches, …) | ✓ | ✓ |
+| Groq | ✓ | ✓ |
+| Mistral | ✓ | ✓ |
+| DeepSeek, xAI, Fireworks, Cerebras, Perplexity | ✓ | |
+| Together AI | ✓ | ✓ |
+| Deepgram | | ✓ (incl. live streaming) |
+| **Ollama, LM Studio** (local) | ✓ | |
+| **Any OpenAI-compatible server** (vLLM, llama.cpp, LocalAI, speaches…) | ✓ | ✓ |
 
-Any model ID your provider accepts can be used; the settings screen can also load the provider's live model list. For a fully offline setup, use Ollama or LM Studio for chat and a local Whisper server such as [speaches](https://github.com/speaches-ai/speaches) as the custom transcription endpoint.
+**Fully offline:** use Ollama or LM Studio for chat and a local Whisper server such as [speaches](https://github.com/speaches-ai/speaches) for transcription, and nothing leaves your machine.
 
-API keys are stored encrypted with your operating system's credential store (Windows DPAPI, macOS Keychain, libsecret/KWallet on Linux) and never leave the main process except in requests to the provider you chose.
+<div align="center">
+<img src="docs/images/ai-providers.png" width="420" alt="AI Providers settings">
+&nbsp;
+<img src="docs/images/share-notes.png" width="420" alt="Sharing a meeting note">
+</div>
 
 ## Install
 
-Download the latest release for your platform from the [releases page](https://github.com/matei-anghel/notto-releases/releases/latest).
+**Windows:** download **[Notto-Setup.exe](https://github.com/matei-anghel/notto/releases/latest/download/Notto-Setup.exe)** and run it. The installer isn't code-signed yet, so Windows SmartScreen may ask you to confirm: choose *More info → Run anyway*.
 
-- **Windows**: run `Notto-Setup.exe`. The installer is not code-signed, so SmartScreen may ask you to confirm.
-- **macOS**: open the `.dmg` and drag Notto to Applications. Grant microphone, screen recording and accessibility permissions when asked; the onboarding screen walks you through them.
-- **Linux**: install the `.deb` (it pulls in `xdotool`, used to paste dictation) or run the AppImage. Global shortcuts and automatic paste require an X11 session.
+**macOS and Linux:** [build from source](#build-from-source) for now. The code supports both, and installers will follow in later releases.
 
-## Build from source
+After installing, open **Settings → AI Providers**, add a key (or point Notto at a local model server), and choose your models.
 
-Requirements: Node.js 22.13 or newer. No C++ toolchain is needed; native modules ship prebuilt binaries.
+## Keyboard shortcuts
 
-```bash
-npm install
-npm start          # build and launch in development
-npm test           # unit tests
-npm run typecheck
-npm run dist       # package for the current platform into release/
-```
+| Action | Windows / Linux | macOS |
+|---|---|---|
+| Dictate while holding | `Ctrl` `Alt` `D` | `⌘` `⌥` `D` |
+| Start / stop dictation | `Ctrl` `Shift` `D` | `⌘` `⇧` `D` |
+| AI mode while holding | `Ctrl` `Alt` `A` | `⌃` `⌥` `A` |
+| Chat overlay | `Ctrl` `Space` | `⌥` `Space` |
+| Add a screenshot to the chat | `Ctrl` `Alt` `S` | `⌘` `⌃` `S` |
+| Quick notes | `Ctrl` `Alt` `Shift` `N` | `⌘` `⌃` `⇧` `N` |
 
-Optional native helpers detect when another app starts using the microphone (to offer meeting notes):
-
-- Windows: `npm run build:win-helper` (needs the .NET 8 SDK)
-- macOS: `npm run build:mac-helper` (needs Xcode command line tools)
-
-Without them, the rest of the app works normally.
-
-## Project layout
-
-```
-src/main.ts              Electron main process: windows, tray, shortcuts, lifecycle
-src/main/ai/             Provider client (OpenAI-compatible, Anthropic, Deepgram), key store, prompts
-src/main/*Ipc.ts         IPC handlers grouped by feature (chat, audio, notes, settings, …)
-src/shared/              Code shared by main and renderer (provider catalog, IPC channel names, …)
-src/renderer.ts          Main window UI;  src/chat.ts  chat overlay;  src/notes-float.ts  quick notes
-src/preload.ts           The only bridge between renderers and the main process
-resources/helpers/       Native mic-watcher helpers (C# for Windows, Swift for macOS)
-tests/                   Node test runner unit tests
-web/                     Project website and download page (deployed to GitHub Pages by .github/workflows/pages.yml)
-```
+Every shortcut can be changed or turned off in Settings.
 
 ## Privacy
 
-Notes, transcripts, chat history and recordings are stored in `~/notto/electron/userData` on your machine. Notto sends data only to the AI providers you configure, when you use a feature that needs them. Update checks contact GitHub Releases.
+- Notes, transcripts, chat history and recordings are stored only on your computer, in `~/notto/electron/userData`.
+- Notto sends data only to the AI providers you configure, and only when you use a feature that needs them.
+- No account, analytics or telemetry. The only other network request is the update check against this repository's releases.
+
+## Build from source
+
+You need Node.js 22.13 or newer. No C++ toolchain is required, because native modules ship prebuilt binaries.
+
+```bash
+git clone https://github.com/matei-anghel/notto.git
+cd notto
+npm install
+npm start          # build and run in development
+npm test           # unit tests
+npm run dist       # create an installer for your platform in release/
+```
+
+Optional native helpers let Notto notice when a meeting app starts using the microphone. Build them with `npm run build:win-helper` (needs the .NET 8 SDK) or `npm run build:mac-helper` (needs the Xcode command line tools). Everything else works without them.
+
+<details>
+<summary>Project layout</summary>
+
+```
+src/main.ts           Electron main process: windows, tray, shortcuts, lifecycle
+src/main/ai/          Provider client (OpenAI-compatible, Anthropic, Deepgram), key store, prompts
+src/main/*Ipc.ts      IPC handlers grouped by feature (chat, audio, notes, settings…)
+src/shared/           Code shared by main and renderer (provider catalog, note search, IPC names)
+src/renderer.ts       Main window UI · src/chat.ts chat overlay · src/notes-float.ts quick notes
+src/preload.ts        The only bridge between renderers and the main process
+resources/helpers/    Native mic-watcher helpers (C# for Windows, Swift for macOS)
+tests/                Unit tests (Node's test runner)
+web/                  Project website
+```
+
+</details>
 
 ## Contributing
 
@@ -84,4 +120,4 @@ Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Notto is licensed under the [GNU General Public License v3.0](LICENSE).
+[GPL-3.0](LICENSE) © Notto contributors

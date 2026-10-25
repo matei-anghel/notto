@@ -1,6 +1,6 @@
 // GitHub Releases Configuration
 const GITHUB_OWNER = 'matei-anghel';
-const GITHUB_REPO = 'notto-releases';
+const GITHUB_REPO = 'notto';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
 
 // Platform detection
