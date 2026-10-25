@@ -1,0 +1,24 @@
+node_modules/
+dist/
+release/
+resources/bin/
+models/
+.env
+.env.*
+!.env.example
+
+electron/
+*.pfx
+*.p12
+build/certs/
+
+# Sensitive credentials - NEVER commit these
+service-account.json
+*.pem
+.codex-run-logs/
+.DS_Store
+Thumbs.db
+
+# Local secrets of any kind
+*.secret.local
+.secret*

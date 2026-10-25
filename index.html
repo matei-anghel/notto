@@ -1,0 +1,1678 @@
+<!-- removed stray toast document -->
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*.googleusercontent.com; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob: data:; worker-src 'self' blob:;" />
+  <title>Notto</title>
+  <link rel="stylesheet" href="src/styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+  <style>
+    /* Layout specific styles */
+    html,
+    body {
+      /* Disable zoom */
+      touch-action: pan-y;
+      -ms-touch-action: pan-y;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      /* Disable zoom */
+      zoom: 1 !important;
+      /* standard properties for compatibility */
+      transform: scale(1);
+      transform-origin: 0 0;
+      /* vendor-prefixed for older Gecko-based browsers */
+      -moz-transform: scale(1);
+      -moz-transform-origin: 0 0;
+    }
+
+    #titlebar {
+      height: calc(42px + env(safe-area-inset-top));
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      padding: 0 8px 0 12px;
+      padding-top: env(safe-area-inset-top);
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+      -webkit-app-region: drag;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    #titlebar .left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-app-region: no-drag;
+    }
+
+    #titlebar .drag-region {
+      -webkit-app-region: drag;
+      height: 100%;
+    }
+
+    #titlebar .app-title {
+      font-weight: var(--font-semibold);
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin: 0;
+      user-select: none;
+    }
+
+    #titlebar .window-controls {
+      display: inline-flex;
+      gap: 2px;
+      -webkit-app-region: no-drag;
+      justify-self: end;
+    }
+
+    #titlebar .window-controls button {
+      padding: 6px;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    #titlebar .window-controls button:hover {
+      background: var(--color-gray-100);
+      color: var(--text-primary);
+    }
+
+    #titlebar .window-controls button:active {
+      background: var(--color-gray-200);
+      transform: scale(0.95);
+    }
+
+    #titlebar .window-controls button#win-close:hover {
+      background: #dc2626;
+      color: white;
+    }
+
+    body.platform-macos #titlebar {
+      padding-left: 84px;
+      padding-right: 12px;
+    }
+
+    body.platform-macos #titlebar .window-controls {
+      display: none;
+    }
+
+    #sidebarToggle {
+      width: 32px;
+      height: 28px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    #sidebarToggle:hover {
+      background: var(--color-gray-100);
+      color: var(--text-primary);
+    }
+
+    #sidebarToggle:active {
+      transform: scale(0.9);
+    }
+
+    #content {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      /* allow children to scroll */
+    }
+
+    #sidebar {
+      width: 210px;
+      background-color: var(--bg-primary);
+      border-right: 1px solid var(--border);
+      padding: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-scrollable {
+      flex: 1;
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-scrollable::-webkit-scrollbar {
+      display: none;
+    }
+
+    #sidebar h3 {
+      margin-bottom: var(--spacing-md);
+      font-size: var(--text-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    #notes-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #notes-list li {
+      padding: var(--spacing-sm) var(--spacing-md);
+      margin-bottom: var(--spacing-xs);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+      color: var(--text-muted);
+    }
+
+    #notes-list li:hover {
+      background-color: var(--color-gray-100);
+      color: var(--text-primary);
+    }
+
+    #main {
+      flex: 1;
+      padding: var(--spacing-xl);
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    #main::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section {
+      margin: var(--spacing-xl) 0;
+    }
+
+    .card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+      min-height: 100px;
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      font-family: var(--font-sans);
+      line-height: var(--leading-relaxed);
+    }
+
+    .card::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card:empty::before {
+      content: "Content will appear here...";
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background-color: var(--border);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .toolbar .label {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      font-weight: var(--font-medium);
+      margin-right: 8px;
+    }
+
+    .toolbar .actions {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal .modal-content {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--spacing-lg);
+      width: 90%;
+      max-width: 900px;
+    }
+
+    .modal .panels-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+    }
+
+    .delete-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+
+
+    /* Personalization Settings Styles */
+    .style-option {
+      display: block;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .style-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .style-option-content {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 10px 12px;
+      transition: all 0.15s ease;
+    }
+
+    .style-option:hover .style-option-content {
+      border-color: var(--text-muted);
+    }
+
+    .style-option input[type="radio"]:checked+.style-option-content {
+      border-color: var(--black);
+      background: var(--black);
+    }
+
+    .style-option input[type="radio"]:checked+.style-option-content .style-option-title,
+    .style-option input[type="radio"]:checked+.style-option-content .style-option-desc {
+      color: var(--white);
+    }
+
+    .style-option-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .style-option-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Personalization List */
+    .personalization-list {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-primary);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* Empty State Styles */
+    .empty-state {
+      padding: 32px 20px;
+      text-align: center;
+    }
+
+    .empty-state-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .empty-state-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Shortcut Item Styles */
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s ease;
+    }
+
+    .shortcut-item:last-child {
+      border-bottom: none;
+    }
+
+    .shortcut-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .shortcut-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .shortcut-item-trigger {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .shortcut-item-replacement {
+      font-size: 12px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .shortcut-item-actions {
+      margin-left: 12px;
+    }
+
+    /* Template Item Styles */
+    .template-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s ease;
+    }
+
+    .template-item:last-child {
+      border-bottom: none;
+    }
+
+    .template-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .template-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .template-item-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .template-item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .template-item-prompt {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* Model Cards Grid */
+    .model-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .model-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .model-card:hover {
+      border-color: var(--text-muted);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .model-card.installed {
+      border-color: var(--color-green-500);
+      background: linear-gradient(to bottom, rgba(34, 197, 94, 0.02), transparent);
+    }
+
+    .model-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .model-card-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .model-card-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-weight: 500;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .model-card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      flex: 1;
+      margin-bottom: 4px;
+    }
+
+    .model-card-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .model-card-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: transparent;
+      padding: 0;
+      border: none;
+      font-weight: 500;
+    }
+
+    .model-card-tag::before {
+      content: "•";
+      margin-right: 6px;
+      color: var(--border);
+    }
+
+    .model-card-tag:first-child::before {
+      display: none;
+    }
+
+    .model-card-footer {
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .model-card-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .model-card-btn {
+      flex: 1;
+      white-space: nowrap;
+      height: 28px;
+      padding: 0 12px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .model-card-btn:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      border-color: var(--text-muted);
+    }
+
+    .model-card-btn.primary {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: 1px solid var(--text-primary);
+    }
+
+    .model-card-btn.primary:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .model-card-btn.ghost {
+      background: transparent;
+    }
+
+    .model-card-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .model-card-btn.danger {
+      background: transparent;
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .model-card-btn.danger:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.05);
+      border-color: #ef4444;
+    }
+
+    .model-card-btn.blue {
+      background: #3b82f6;
+      color: white;
+      border: 1px solid #3b82f6;
+    }
+
+    .model-card-btn.blue:hover:not(:disabled) {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .model-card-btn.light-red {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border-color: transparent;
+    }
+
+    .model-card-btn.light-red:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .modern-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #eee;
+      outline: none;
+      margin: 12px 0;
+      cursor: pointer;
+    }
+
+    .modern-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--white);
+      cursor: pointer;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .modern-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .modern-slider::-webkit-slider-thumb:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="titlebar">
+    <div class="left">
+      <button id="sidebarToggle" title="Toggle sidebar" aria-label="Toggle sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="9" y1="3" x2="9" y2="21" />
+        </svg>
+      </button>
+    </div>
+    <div class="drag-region"></div>
+    <div class="window-controls">
+      <button id="win-min" title="Minimize" aria-label="Minimize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
+      <button id="win-max" title="Maximize" aria-label="Maximize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="7" y="7" width="10" height="10" rx="1" />
+        </svg>
+      </button>
+      <button id="win-close" title="Close" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div id="content">
+    <aside id="sidebar">
+      <div class="sidebar-scrollable">
+        <div class="brand">
+          <img src="logos/logo black.png" alt="Notto Logo">
+          <span>Notto</span>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Menu</div>
+          <ul class="nav-list">
+            <li class="nav-item active" id="nav-home">
+              <span class="icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </span>
+              <span>Home</span>
+            </li>
+
+            <li class="nav-item" id="nav-notes">
+              <span class="icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </span>
+              <span>Notes</span>
+              <ul id="notes-subtree" class="sub-items"></ul>
+            </li>
+            <li class="nav-item" id="nav-chat-notes">
+              <span class="icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </span>
+              <span>Chat with Notes</span>
+            </li>
+          </ul>
+        </div>
+
+        <ul id="notes-list"></ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-settings-btn" id="settingsNavBtn" aria-label="Settings" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+    <main id="main">
+      <div id="homeSection">
+        <div class="ai-setup-banner" id="aiSetupBanner" style="display: none;" role="status">
+          <span class="ai-setup-banner-text">Set up an AI provider to use chat, dictation and meeting notes</span>
+          <div class="ai-setup-banner-actions">
+            <button class="primary small" id="aiSetupBtn">Open AI settings</button>
+            <button class="ai-setup-banner-close" id="aiSetupClose" aria-label="Dismiss" title="Dismiss">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <header class="mb-xl">
+          <div class="header-row mb-sm">
+            <h1 class="mb-sm" id="welcomeHeader"></h1>
+            <div class="stats-bar">
+              <button class="pill stat-pill" id="statWPM">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+                <span><strong id="statWPMValue"></strong> WPM</span>
+                <div class="stat-tooltip">
+                  <div class="stat-tooltip-title">Words Per Minute (WPM)</div>
+                  <div class="stat-tooltip-text">Your average dictation speed.</div>
+                </div>
+              </button>
+              <button class="pill stat-pill" id="statWordsDictated">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+                <span><strong id="statWordsDictatedValue"></strong> words</span>
+                <div class="stat-tooltip">
+                  <div class="stat-tooltip-title">Words Dictated</div>
+                  <div class="stat-tooltip-text">Total number of words you've spoken using voice dictation.</div>
+                </div>
+              </button>
+              <button class="pill stat-pill" id="statMeetings">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 7l-7 5 7 5V7z" />
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                </svg>
+                <span><strong id="statMeetingsValue"></strong> meetings</span>
+                <div class="stat-tooltip">
+                  <div class="stat-tooltip-title">Meetings Transcripted</div>
+                  <div class="stat-tooltip-text">Total number of meetings you've recorded and transcribed.</div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="hero-card mb-xl">
+            <div class="hero-content" style="width: 100%;">
+              <div class="hero-header">
+                <div class="hero-title">
+                  Master your workflow
+                  <button class="hero-card-edit-btn" id="heroShortcutsEditBtn" title="Edit Shortcuts">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="hero-actions">
+                  <button class="primary small" id="recordBtn">Start meeting</button>
+                  <div class="recording-controls" id="recordingControls" style="display: none;">
+                    <div class="recording-status inactive" id="recordingStatus">
+                      <span class="recording-dot" aria-hidden="true"></span>
+                      <span id="status" class="status"></span>
+                    </div>
+                    <button class="recording-btn recording-pause-btn" id="pauseBtn" title="Pause/Resume"
+                      aria-label="Pause or resume">
+                      <svg class="pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                      </svg>
+                      <svg class="resume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                    </button>
+                    <button class="recording-btn recording-stop-btn" id="stopBtn" title="Stop meeting"
+                      aria-label="Stop meeting">
+                      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <rect x="6" y="6" width="12" height="12" rx="2" />
+                      </svg>
+                    </button>
+                  </div>
+                  <button class="small" id="noteTakerWidgetBtn" title="Meetings Notetaker Settings"
+                    style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="shortcuts-grid">
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Dictation (Hold)</span>
+                  <div class="shortcut-keys" id="hero-key-dictationHold">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Dictation (Toggle)</span>
+                  <div class="shortcut-keys" id="hero-key-dictationToggle">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Agentic Dictation (Hold)</span>
+                  <div class="shortcut-keys" id="hero-key-aiModeHold">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Personal Note</span>
+                  <div class="shortcut-keys" id="hero-key-notesToggle">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Chat Overlay</span>
+                  <div class="shortcut-keys" id="hero-key-chatToggle">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-label">Add Screen Context</span>
+                  <div class="shortcut-keys" id="hero-key-screenshotCapture">
+                    <!-- Populated dynamically by renderer.ts -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+        </header>
+
+        <section class="section">
+          <h3 class="section-header">Recent activity</h3>
+          <div class="activity" id="activity"
+            style="border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-primary);">
+            <div id="activityList">
+              <!-- Skeleton loading state - replaced by JS when data loads -->
+              <div class="activity-skeleton">
+                <div class="activity-skeleton-item">
+                  <div class="skeleton-line skeleton-time"></div>
+                  <div class="skeleton-line skeleton-text"></div>
+                </div>
+                <div class="activity-skeleton-item">
+                  <div class="skeleton-line skeleton-time"></div>
+                  <div class="skeleton-line skeleton-text-short"></div>
+                </div>
+                <div class="activity-skeleton-item">
+                  <div class="skeleton-line skeleton-time"></div>
+                  <div class="skeleton-line skeleton-text"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+
+      <div class="section" id="notesSection" style="display:none">
+        <!-- Notes Header -->
+        <div class="notes-header">
+          <div class="notes-header-left">
+            <h1 class="notes-title">Notes</h1>
+          </div>
+          <div class="notes-header-actions">
+            <button id="noteNew" class="primary small">+ New Note</button>
+          </div>
+        </div>
+
+        <!-- Notes Content -->
+        <div class="notes-container">
+          <!-- Sidebar -->
+          <div class="notes-sidebar">
+            <div class="notes-search-container">
+              <svg class="notes-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input id="notesSearch" type="search" placeholder="Search notes..." class="notes-search" />
+            </div>
+
+            <div class="notes-list-container">
+              <div class="notes-list-header">
+                <span>All Notes</span>
+                <span id="notesCount" class="notes-count">0</span>
+              </div>
+              <ul id="notesListUI" class="notes-list"></ul>
+            </div>
+          </div>
+
+          <!-- Editor -->
+          <div class="notes-editor">
+            <div class="notes-editor-header">
+              <div class="notes-title-container">
+                <div class="notes-title-row">
+                  <input id="noteTitle" type="text" placeholder="Untitled note" class="notes-title-input" />
+                  <span id="noteTitleTimestamp" class="note-title-timestamp"></span>
+                </div>
+                <div class="notes-meta">
+                  <span id="noteSaveStatus" class="save-status">All changes saved</span>
+                </div>
+              </div>
+
+              <div class="notes-editor-controls">
+                <div class="note-share">
+                  <button id="noteShareBtn" class="secondary small" type="button" aria-haspopup="menu" aria-expanded="false">Share</button>
+                  <div id="noteShareMenu" class="note-share-menu" role="menu" hidden>
+                    <button type="button" role="menuitem" data-share="copy">Copy as Markdown</button>
+                    <button type="button" role="menuitem" data-share="file">Save as .md file</button>
+                    <button type="button" role="menuitem" data-share="email">Send by email</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="notes-editor-content">
+              <div id="editor-container" class="editor-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes editor modal -->
+        <div id="noteEditorModal" class="modal" style="display:none">
+          <div class="modal-content card">
+            <div class="section-header">Edit note (Markdown)</div>
+            <div class="panels-grid" style="margin-top:10px;">
+              <textarea id="noteEditorText" class="card" placeholder="Write in Markdown..."
+                style="min-height:220px;"></textarea>
+              <div id="noteEditorPreview" class="card" style="min-height:220px"></div>
+            </div>
+            <div class="mt-sm" style="margin-top:10px; display:flex; gap:8px;">
+              <button id="noteEditorSave" class="primary small">Save</button>
+              <button id="noteEditorCancel" class="small">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete confirmation modal -->
+        <div id="deleteConfirmModal" class="modal" style="display:none">
+          <div class="modal-content card delete-modal">
+            <div class="delete-modal-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </div>
+            <div class="delete-modal-title">Personal Note</div>
+            <div class="delete-modal-message" id="deleteConfirmMessage">Are you sure you want to delete this note? This
+              action cannot be undone.</div>
+            <div class="delete-modal-actions">
+              <button id="deleteConfirmCancel" class="ghost small" style="flex: 1;">Cancel</button>
+              <button id="deleteConfirmOk" class="danger small" style="flex: 1;">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="chatNotesSection" style="display:none">
+        <div class="notes-header">
+          <div class="notes-header-left">
+            <h1 class="notes-title">Chat with Notes</h1>
+          </div>
+          <div class="notes-header-actions">
+            <button id="chatNotesNewChat" class="primary small">+ New Chat</button>
+          </div>
+        </div>
+
+        <div class="chat-notes-layout">
+          <aside class="chat-notes-history">
+            <div class="chat-notes-history-header">
+              <div class="chat-notes-history-title">Notes Context</div>
+              <div id="chatNotesSelectionSummary" class="chat-notes-history-subtitle">Select notes to include in context.</div>
+              <input id="chatNotesNoteSearch" class="chat-notes-sidebar-search" type="search"
+                placeholder="Search meeting notes and personal notes" spellcheck="false" />
+            </div>
+            <div id="chatNotesHistoryList" class="chat-notes-history-list"></div>
+          </aside>
+
+          <div class="chat-notes-main">
+            <div id="chatNotesThread" class="chat-notes-thread">
+              <div class="chat-notes-empty">
+                Select meeting notes or personal notes from the left, then ask a question.
+              </div>
+            </div>
+
+            <div class="chat-notes-composer">
+              <textarea id="chatNotesInput" class="chat-notes-input" placeholder="Ask your notes anything..." rows="3"
+                maxlength="8000" spellcheck="false"></textarea>
+              <div id="chatNotesAttachedFiles" class="chat-notes-attached-files"></div>
+              <div class="chat-notes-composer-footer">
+                <div class="chat-notes-hint">Searches all your notes, or only the ones you select.</div>
+                <div class="chat-notes-composer-actions">
+                  <button id="chatNotesAttachBtn" class="secondary small" type="button">Add Files</button>
+                  <button id="chatNotesSend" class="primary small">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="speakingTrainerSection" style="display:none">
+        <div class="speaking-trainer-header">
+          <h1>Speaking Trainer</h1>
+          <p>Coach your delivery with meeting transcripts captured by Notto. Each analysis combines transcript heuristics with AI feedback grounded in what was actually said.</p>
+        </div>
+
+        <div class="speaking-trainer-selector">
+          <label for="speakingTrainerSelect">Choose a meeting transcript</label>
+          <select id="speakingTrainerSelect">
+            <option value="">Select a meeting</option>
+          </select>
+        </div>
+
+        <div id="speakingTrainerLoading" class="speaking-trainer-loading" style="display:none">
+          <div class="spinner"></div>
+          <span>Analyzing this meeting...</span>
+        </div>
+
+        <div id="speakingTrainerEmpty" class="speaking-trainer-empty" style="display:none">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v11"></path>
+            <path d="M8 6h8"></path>
+            <path d="M5 16a7 7 0 0 0 14 0"></path>
+            <path d="M12 19v3"></path>
+          </svg>
+          <p>No transcript-backed meeting notes yet</p>
+          <p>Start a Notto meeting recording first. Speaking Trainer only analyzes notes that include a saved transcript.</p>
+        </div>
+
+        <div id="speakingTrainerContent" style="display:none">
+          <div class="speaking-trainer-metrics">
+            <div class="speaking-trainer-metric">
+              <div class="speaking-trainer-metric-icon">...</div>
+              <div class="speaking-trainer-metric-value" id="trainerMetricFillersValue">N/A</div>
+              <div class="speaking-trainer-metric-label">Fillers / 100 words</div>
+              <div class="speaking-trainer-metric-sublabel" id="trainerMetricFillersSub">No transcript selected</div>
+              <div class="speaking-trainer-metric-target" id="trainerMetricFillersTrend">Across notes: N/A</div>
+            </div>
+            <div class="speaking-trainer-metric">
+              <div class="speaking-trainer-metric-icon">?</div>
+              <div class="speaking-trainer-metric-value" id="trainerMetricQuestionsValue">N/A</div>
+              <div class="speaking-trainer-metric-label">Questions / 100 words</div>
+              <div class="speaking-trainer-metric-sublabel" id="trainerMetricQuestionsSub">No transcript selected</div>
+              <div class="speaking-trainer-metric-target" id="trainerMetricQuestionsTrend">Across notes: N/A</div>
+            </div>
+            <div class="speaking-trainer-metric">
+              <div class="speaking-trainer-metric-icon">=</div>
+              <div class="speaking-trainer-metric-value" id="trainerMetricTurnsValue">N/A</div>
+              <div class="speaking-trainer-metric-label">Longest turn</div>
+              <div class="speaking-trainer-metric-sublabel" id="trainerMetricTurnsSub">No transcript selected</div>
+              <div class="speaking-trainer-metric-target" id="trainerMetricTurnsTrend">Across notes: N/A</div>
+            </div>
+            <div class="speaking-trainer-metric">
+              <div class="speaking-trainer-metric-icon">></div>
+              <div class="speaking-trainer-metric-value" id="trainerMetricPaceValue">N/A</div>
+              <div class="speaking-trainer-metric-label">Pace (WPM)</div>
+              <div class="speaking-trainer-metric-sublabel" id="trainerMetricPaceSub">No transcript selected</div>
+              <div class="speaking-trainer-metric-target" id="trainerMetricPaceTrend">Across notes: N/A</div>
+            </div>
+          </div>
+
+          <div class="speaking-trainer-feedback-card">
+            <h3>AI Coach Summary</h3>
+            <div class="speaking-trainer-analysis-panel-content">
+              <div class="speaking-trainer-section-title" id="speakingTrainerHeadline">Pick a meeting to generate coaching.</div>
+              <div id="speakingTrainerSummary">The trainer will combine transcript heuristics with AI coaching once a transcript-backed note is selected.</div>
+            </div>
+          </div>
+
+          <div class="speaking-trainer-analysis-grid" style="margin-top: var(--space-5);">
+            <div class="speaking-trainer-analysis-panel">
+              <h3>Strengths</h3>
+              <div class="speaking-trainer-analysis-panel-content" id="speakingTrainerStrengths">No analysis yet.</div>
+            </div>
+            <div class="speaking-trainer-analysis-panel">
+              <h3>Improvements</h3>
+              <div class="speaking-trainer-analysis-panel-content" id="speakingTrainerImprovements">No analysis yet.</div>
+            </div>
+            <div class="speaking-trainer-analysis-panel">
+              <h3>Practice Drills</h3>
+              <div class="speaking-trainer-analysis-panel-content" id="speakingTrainerDrills">No analysis yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="settingsSection" style="display:none">
+        <!-- Settings Header -->
+        <div class="notes-header">
+          <div class="notes-header-left">
+            <h1 class="notes-title">Settings</h1>
+          </div>
+        </div>
+
+        <!-- Settings Content -->
+        <!-- AI Providers -->
+        <div class="card" id="aiProvidersSection" style="margin-bottom:16px;">
+          <div class="section-header ai-section-header">
+            AI Providers
+            <span id="aiSettingsStatus" class="ai-status" role="status"></span>
+          </div>
+          <p class="settings-desc ai-intro">Notto is free and open source. Bring your own API keys, or run models
+            locally with Ollama, LM Studio or any OpenAI-compatible server. Keys stay on this device.</p>
+          <div class="ai-warning" id="aiKeychainWarning" style="display:none;">Your OS keychain is unavailable, so API
+            keys are stored unencrypted in the app data folder.</div>
+
+          <div class="settings-row-aligned ai-task-row">
+            <div class="settings-info">
+              <label for="ai-chat-provider">Chat</label>
+              <div class="settings-desc">Used for the chat overlay, AI mode and meeting notes</div>
+            </div>
+            <div class="ai-task-controls">
+              <select id="ai-chat-provider"></select>
+              <input id="ai-chat-model" type="text" list="ai-chat-models" placeholder="Model" autocomplete="off"
+                spellcheck="false" />
+              <datalist id="ai-chat-models"></datalist>
+            </div>
+          </div>
+
+          <div class="settings-row-aligned ai-task-row">
+            <div class="settings-info">
+              <label for="ai-vision-provider">Vision (images and screenshots)</label>
+              <div class="settings-desc">Defaults to the chat model when set to "Same as chat"</div>
+            </div>
+            <div class="ai-task-controls">
+              <select id="ai-vision-provider"></select>
+              <input id="ai-vision-model" type="text" list="ai-vision-models" placeholder="Model" autocomplete="off"
+                spellcheck="false" />
+              <datalist id="ai-vision-models"></datalist>
+            </div>
+          </div>
+
+          <div class="settings-row-aligned ai-task-row">
+            <div class="settings-info">
+              <label for="ai-transcription-provider">Transcription</label>
+              <div class="settings-desc">Used for dictation and meeting transcription</div>
+            </div>
+            <div class="ai-task-controls">
+              <select id="ai-transcription-provider"></select>
+              <input id="ai-transcription-model" type="text" list="ai-transcription-models" placeholder="Model" autocomplete="off"
+                spellcheck="false" />
+              <datalist id="ai-transcription-models"></datalist>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Live dictation (Deepgram streaming)</div>
+              <div class="settings-desc">Only applies when Deepgram is the transcription provider</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="aiLiveDictation" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-header">Providers</div>
+          <div class="ai-provider-list" id="aiProviderList"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <!-- General Settings -->
+          <div class="section-header">General</div>
+
+          <div class="settings-row-aligned">
+            <label for="settingsDictationLanguage">Dictation Language</label>
+            <select id="settingsDictationLanguage">
+              <option value="multi">Multilingual (Auto-detect)</option>
+              <option value="en">English</option>
+              <option value="ro">Romanian</option>
+              <option value="de">German</option>
+              <option value="fr">French</option>
+              <option value="es">Spanish</option>
+              <option value="it">Italian</option>
+              <option value="pt">Portuguese</option>
+              <option value="nl">Dutch</option>
+              <option value="pl">Polish</option>
+              <option value="ru">Russian</option>
+              <option value="uk">Ukrainian</option>
+              <option value="ja">Japanese</option>
+              <option value="ko">Korean</option>
+              <option value="zh">Chinese</option>
+              <option value="hi">Hindi</option>
+              <option value="tr">Turkish</option>
+              <option value="bg">Bulgarian</option>
+              <option value="cs">Czech</option>
+              <option value="da">Danish</option>
+              <option value="fi">Finnish</option>
+              <option value="el">Greek</option>
+              <option value="hu">Hungarian</option>
+              <option value="id">Indonesian</option>
+              <option value="lv">Latvian</option>
+              <option value="lt">Lithuanian</option>
+              <option value="ms">Malay</option>
+              <option value="no">Norwegian</option>
+              <option value="sk">Slovak</option>
+              <option value="sv">Swedish</option>
+              <option value="vi">Vietnamese</option>
+            </select>
+          </div>
+
+          <div class="settings-slider-group">
+            <div class="settings-slider-label">
+              <span class="settings-slider-title">Window Transparency</span>
+            </div>
+            <div class="slider-container">
+              <input id="settingsChatTranslucence" type="range" min="0" max="100" step="5" value="0"
+                class="modern-slider" />
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Dark Theme</div>
+              <div class="settings-desc">Use dark gray color scheme for the AI Chat Overlay and Quick Notes</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsStealthDarkTheme" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Hoverable Overlay Controls</div>
+              <div class="settings-desc">Allow hover cursor, resize handle, and scrollbar hover states in the AI Chat Overlay</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsChatOverlayHoverable" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Minimal Chat Overlay</div>
+              <div class="settings-desc">Hide chat controls, placeholder text, and user prompts in the AI Chat Overlay</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsChatOverlayMinimal" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Text Cursor Overlay</div>
+              <div class="settings-desc">Show the text-selection (I-beam) cursor anywhere over the AI Chat Overlay</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsChatOverlayTextCursor" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Stealth Mode</div>
+              <div class="settings-desc">App is invisible in screenshares in Zoom, Teams, Meet, Slack</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsStealthScreenCapture" type="checkbox" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="section-header"
+            style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+            Keyboard Shortcuts
+            <button id="resetShortcutsBtn" class="icon-btn-small" title="Reset to Defaults"
+              style="background: #000; color: #fff; border: none; cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </button>
+          </div>
+          <style>
+            #resetShortcutsBtn:hover {
+              opacity: 0.8;
+            }
+          </style>
+
+          <div class="shortcuts-wrapper" style="max-width: 100%; margin-bottom: 24px;">
+            <div id="shortcutsContainer" style="margin-top:10px;">
+              <!-- Shortcuts will be dynamically populated here -->
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <!-- Personalization -->
+          <div class="section-header">Personalization</div>
+
+          <!-- AI Writing Style -->
+          <div class="control-group" style="margin-top:16px;">
+            <label
+              style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:4px; display:block;">Writing
+              Style</label>
+            <div class="text-small" style="opacity:0.6; margin-bottom:12px;">Choose how the AI should write when
+              chatting and using agentic dictation</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+              <label class="style-option" data-mode="professional">
+                <input type="radio" name="aiStyleMode" value="professional" id="aiStyleProfessional" checked />
+                <div class="style-option-content">
+                  <div class="style-option-title">Professional</div>
+                  <div class="style-option-desc">Formal tone, no emojis</div>
+                </div>
+              </label>
+
+              <label class="style-option" data-mode="casual">
+                <input type="radio" name="aiStyleMode" value="casual" id="aiStyleCasual" />
+                <div class="style-option-content">
+                  <div class="style-option-title">Casual</div>
+                  <div class="style-option-desc">Friendly, relaxed tone</div>
+                </div>
+              </label>
+
+              <label class="style-option" data-mode="concise">
+                <input type="radio" name="aiStyleMode" value="concise" id="aiStyleConcise" />
+                <div class="style-option-content">
+                  <div class="style-option-title">Concise</div>
+                  <div class="style-option-desc">Brief and to the point</div>
+                </div>
+              </label>
+
+              <label class="style-option" data-mode="custom">
+                <input type="radio" name="aiStyleMode" value="custom" id="aiStyleCustomRadio" />
+                <div class="style-option-content">
+                  <div class="style-option-title">Custom</div>
+                  <div class="style-option-desc">Define your own style</div>
+                </div>
+              </label>
+            </div>
+
+            <div id="aiStyleCustomBox" style="margin-top:12px; display:none;">
+              <textarea id="aiStyleCustom"
+                placeholder="Example: Write like a tech startup founder - casual but enthusiastic, use lowercase, occasional emojis..."
+                rows="3"
+                style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family: var(--font-system); font-size:13px; resize: vertical; background:var(--bg-primary);"></textarea>
+            </div>
+          </div>
+
+          <!-- Text Shortcuts -->
+          <div class="control-group" style="margin-top:24px;">
+            <label
+              style="font-size:13px; font-weight:500; color:var(--text-primary); margin-bottom:8px; display:block;">Custom
+              Dictionary</label>
+            <div class="text-small" style="opacity:0.6; margin-bottom:12px;">Save shortcuts for things you type
+              frequently and add custom terms</div>
+
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <input type="text" id="shortcutTrigger" placeholder="Trigger (e.g., @email)"
+                style="flex:1; padding:8px 10px; border-radius:6px; border:1px solid var(--border); font-size:13px; background:var(--bg-primary);" />
+              <input type="text" id="shortcutReplacement" placeholder="Replacement text"
+                style="flex:2; padding:8px 10px; border-radius:6px; border:1px solid var(--border); font-size:13px; background:var(--bg-primary);" />
+              <button id="addShortcut" class="primary small">Add</button>
+            </div>
+
+            <div id="shortcutsList" class="personalization-list">
+            </div>
+          </div>
+
+          <!-- Meeting Templates -->
+          <div class="control-group" style="margin-top:24px;">
+            <label
+              style="font-size:13px; font-weight:500; color:var(--text-primary); margin-bottom:8px; display:block;">Meeting
+              Templates</label>
+            <div class="text-small" style="opacity:0.6; margin-bottom:12px;">Create custom templates for your most
+              common meeting types</div>
+
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <input type="text" id="templateName" placeholder="Template name (e.g., 1:1, Standup)"
+                style="flex:1; padding:8px 10px; border-radius:6px; border:1px solid var(--border); font-size:13px; background:var(--bg-primary);" />
+              <button id="addTemplate" class="primary small">New Template</button>
+            </div>
+
+            <div id="templateTextareaBox" style="margin-bottom:12px; display:none;">
+              <textarea id="templatePrompt"
+                placeholder="Example: Summarize key decisions, action items with owners, and follow-up dates..."
+                rows="3"
+                style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); font-family: var(--font-system); font-size:13px; resize: vertical; margin-bottom:8px; background:var(--bg-primary);"></textarea>
+              <div style="display:flex; gap:8px;">
+                <button id="saveTemplate" class="primary small">Save Template</button>
+                <button id="cancelTemplate" class="small">Cancel</button>
+              </div>
+            </div>
+
+            <div id="templatesList" class="personalization-list">
+            </div>
+          </div>
+
+          <div class="divider" style="margin-top:24px;"></div>
+          <div class="section-header">Meeting Detection</div>
+
+          <!-- Ignored Mic Apps -->
+          <div class="control-group" style="margin-top:16px;">
+            <label
+              style="font-size:13px; font-weight:500; color:var(--text-primary); margin-bottom:8px; display:block;">Ignored
+              Mic Apps</label>
+            <div class="text-small" style="opacity:0.6; margin-bottom:12px;">Notto treats microphone activity as a
+              meeting unless the app is on the ignore list. Add apps here when they use the mic but should not trigger
+              meeting prompts.</div>
+
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <input type="text" id="meetingAppInput" placeholder="App name to ignore (e.g., audacity)"
+                style="flex:1; padding:8px 10px; border-radius:6px; border:1px solid var(--border); font-size:13px; background:var(--bg-primary);" />
+              <button id="addMeetingApp" class="primary small">Add</button>
+            </div>
+
+            <div id="meetingAppsList" class="personalization-list">
+              <!-- Populated dynamically by renderer.ts -->
+            </div>
+          </div>
+
+          <div class="divider" style="margin-top:24px;"></div>
+          <div class="section-header">System Settings</div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Open app at system startup</div>
+              <div class="settings-desc">Automatically launch Notto when your computer starts</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsOpenAtStartup" type="checkbox" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Meeting Note Notifications</div>
+              <div class="settings-desc">Show a desktop notification when a meeting note is finished processing</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch">
+                <input id="settingsMeetingNotifications" type="checkbox" checked />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-toggle-row">
+            <div class="settings-info">
+              <div class="settings-title">Reset All Statistics</div>
+              <div class="settings-desc">Clear all statistics and start fresh. This action cannot be undone.</div>
+            </div>
+            <div class="settings-control">
+              <button id="settingsStatReset" class="danger small"
+                style="display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Permissions Section (macOS only) - hidden by default, shown via JS -->
+          <div id="permissionsSection" class="divider-section" style="display: none;">
+            <div class="divider" style="margin-top:24px;"></div>
+            <div class="section-header">System Permissions (macOS)</div>
+            <div class="text-small" style="opacity:0.6; margin-bottom:16px;">
+              Repair permissions by feature. These cards show whether the feature is ready or needs attention.
+            </div>
+
+            <div class="settings-toggle-row">
+              <div class="settings-info">
+                <div class="settings-title">🎤 Microphone</div>
+                <div id="settingsMicDesc" class="settings-desc">Voice dictation and meeting transcription.</div>
+              </div>
+              <div class="settings-control" style="display: flex; align-items: center; gap: 8px;">
+                <span id="settingsMicStatus" class="permission-status-dot pending"></span>
+                <button id="settingsMicBtn" class="small">Check</button>
+              </div>
+            </div>
+
+            <div class="settings-toggle-row">
+              <div class="settings-info">
+                <div class="settings-title">🖥️ Meeting capture</div>
+                <div class="settings-desc" id="settingsMeetingCaptureDesc">Screen Recording plus the macOS capture preflight for system audio.</div>
+              </div>
+              <div class="settings-control" style="display: flex; align-items: center; gap: 8px;">
+                <span id="settingsMeetingCaptureStatus" class="permission-status-dot pending"></span>
+                <button id="settingsMeetingCaptureBtn" class="small">Repair</button>
+              </div>
+            </div>
+
+            <div class="settings-toggle-row">
+              <div class="settings-info">
+                <div class="settings-title">⌨️ Typing into apps</div>
+                <div class="settings-desc" id="settingsTypingAccessDesc">Accessibility plus typing automation so Notto can paste text where you are working.</div>
+              </div>
+              <div class="settings-control" style="display: flex; align-items: center; gap: 8px;">
+                <span id="settingsTypingAccessStatus" class="permission-status-dot pending"></span>
+                <button id="settingsTypingAccessBtn" class="small">Repair</button>
+              </div>
+            </div>
+
+            <div class="settings-toggle-row">
+              <div class="settings-info">
+                <div class="settings-title">🧩 Global shortcuts</div>
+                <div class="settings-desc" id="settingsGlobalShortcutsDesc">Input Monitoring plus a working hold-shortcuts listener.</div>
+              </div>
+              <div class="settings-control" style="display: flex; align-items: center; gap: 8px;">
+                <span id="settingsGlobalShortcutsStatus" class="permission-status-dot pending"></span>
+                <button id="settingsGlobalShortcutsBtn" class="small">Repair</button>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
+
+
+    </main>
+
+    <!-- Reset Shortcuts Confirmation Modal -->
+    <div id="resetShortcutsModal" class="modal" style="display:none">
+      <div class="modal-content card" style="max-width: 400px;">
+        <div class="section-header">Reset Shortcuts</div>
+        <div style="margin-top: 15px;">
+          <p class="text-secondary text-small">Are you sure you want to reset all keyboard shortcuts to their default
+            values?</p>
+        </div>
+        <div class="mt-sm" style="margin-top:24px; display:flex; gap:8px; justify-content: flex-end;">
+          <button id="resetShortcutsConfirmBtn" class="primary small">Reset</button>
+          <button id="resetShortcutsCancelBtn" class="small">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+    integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"
+    crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"
+    crossorigin="anonymous"></script>
+
+
+
+  <!-- Note Taker Widget (Popover) -->
+  <div id="noteTakerWidget" class="card note-taker-widget"
+    style="display:none; position:fixed; z-index:100; padding: 16px; width: 300px; box-shadow: var(--shadow-lg); background: var(--bg-primary); border: 1px solid #000; border-radius: var(--radius);">
+    <div class="note-taker-body" style="display:flex; flex-direction:column; gap:12px;">
+      <div class="form-group">
+        <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block;">Meeting Audio Mode</label>
+        <select id="widgetAudioMode" class="select-full">
+          <option value="both">System + Microphone</option>
+          <option value="system">System Audio Only</option>
+          <option value="mic">Microphone Only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block;">Microphone</label>
+        <select id="widgetMicDevice" class="select-full"></select>
+      </div>
+      <div class="form-group">
+        <label style="font-size:12px; font-weight:600; margin-bottom:4px; display:block;">Speaker (System)</label>
+        <select id="widgetSpeakerDevice" class="select-full"></select>
+      </div>
+    </div>
+  </div>
+
+  <script src="dist/renderer.js"></script>
+</body>
+
+</html>

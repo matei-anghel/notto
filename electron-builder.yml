@@ -1,0 +1,128 @@
+# Electron Builder Configuration for Notto
+
+appId: com.notto.app
+productName: Notto
+
+# Common configuration
+# Native modules ship N-API prebuilds and are prepared by `npm run rebuild:native` + `copy:native`
+# before every packaging command. electron-builder's own rebuild would compile better-sqlite3
+# from source and fail on machines without Visual Studio / Xcode / gcc.
+npmRebuild: false
+asar: true
+
+# Shipped builds can't be repurposed as a generic Node runtime or have code injected through
+# NODE_OPTIONS / --inspect. The app uses none of these at runtime.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+asarUnpack:
+  - "dist/node_modules/better-sqlite3/**/*"
+  - "dist/node_modules/uiohook-napi/**/*"
+  - "dist/node_modules/win32-api/**/*"
+
+extraResources:
+  - from: "resources/bin"
+    to: "bin"
+
+files:
+  - "dist/**/*"
+  - "!dist/win-unpacked"
+  - "!dist/linux-unpacked"
+  - "!dist/mac"
+  - "!dist/mas"
+  - "index.html"
+  - "prompt.html"
+  - "hud.html"
+  - "toast.html"
+  - "chat.html"
+  - "notes-float.html"
+  - "permissions.html"
+  - "logos/**/*"
+  - "src/styles.css"
+  - "src/vendor/**/*"
+  # Security: Explicitly exclude sensitive files
+  - "!service-account.json"
+  - "!*.pem"
+  - "!*.pfx"
+  - "!*.p12"
+  - "!.env*"
+
+directories:
+  output: release
+  buildResources: build
+
+# Windows: Unsigned builds (zero-cost distribution)
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+  # Remove version from installer filename
+  artifactName: "${productName}-Setup.${ext}"
+
+# macOS: Self-signed certificate (zero-cost distribution)
+# Run: bash scripts/create-mac-cert.sh to create the certificate first
+mac:
+  target:
+    - dmg
+    - zip
+  icon: build/icon.icns
+  category: public.app-category.productivity
+  extendInfo:
+    NSMicrophoneUsageDescription: "Notto uses your microphone for dictation and meeting transcription."
+    NSAppleEventsUsageDescription: "Notto uses Automation permission to paste dictated text into other apps using System Events."
+  # Self-signed certificate for consistent code signing
+  # Users still need to run: sudo spctl --add /Applications/Notto.app once
+  identity: "Notto Self-Signed"
+  # Disable hardened runtime for self-signed builds
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+
+# Linux: AppImage and deb (no signing needed)
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: build/icon.png
+  category: Utility
+  maintainer: "Notto contributors <contact@notto.app>"
+  executableName: notto
+  # Must match the window class (app name "Notto") so docks group windows under the Notto icon.
+  desktop:
+    entry:
+      Name: Notto
+      StartupWMClass: Notto
+
+# electron-builder's default Debian dependencies, plus xdotool, which dictation uses to paste (X11).
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libuuid1
+    - libsecret-1-0
+    - xdotool
+
+# NSIS installer settings
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  # Use product name without version for shortcuts
+  shortcutName: Notto
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico
+
+# GitHub Releases publishing (DUAL-REPO STRATEGY)
+# Source code stays in private repo, releases go to public repo
+publish:
+  provider: github
+  owner: matei-anghel
+  repo: notto-releases  # <-- PUBLIC repo for downloads (create this!)

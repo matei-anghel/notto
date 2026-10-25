@@ -1,0 +1,13 @@
+# Notto - Crawler Rules
+# Limit crawl rate to reduce bandwidth usage
+
+User-agent: *
+Allow: /
+Crawl-delay: 10
+
+# Block crawling of dashboard/auth pages (not useful for search)
+Disallow: /oauth-callback
+Disallow: /dashboard
+
+# Sitemap (optional - add if you have one)
+# Sitemap: https://usenotto.com/sitemap.xml

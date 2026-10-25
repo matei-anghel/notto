@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Notto</title>
+  <link rel="stylesheet" href="src/styles.css" />
+  <style>
+    /* Dieter Rams Design Philosophy: "Weniger, aber besser" (Less, but better) */
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-4);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+    }
+
+    /* Content container - clean alignment */
+    #content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-3);
+      width: 100%;
+    }
+
+    /* Header with indicator */
+    #header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      width: 100%;
+    }
+
+    /* Minimal dot indicator - functional, not decorative */
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--black);
+      flex-shrink: 0;
+    }
+
+    /* Text hierarchy */
+    #msg {
+      font-size: var(--text-sm);
+      font-weight: var(--font-semibold);
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      line-height: var(--leading-tight);
+    }
+
+    #sub {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      line-height: var(--leading-snug);
+      margin-top: 2px;
+    }
+
+    #legal {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 320px;
+    }
+
+    /* Button group - functional layout */
+    .button-group {
+      display: flex;
+      gap: var(--space-2);
+      width: 100%;
+      margin-top: var(--space-1);
+    }
+
+    .button-group button {
+      flex: 1;
+      font-size: var(--text-xs);
+      padding: 7px var(--space-3);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="content">
+    <div id="header">
+      <div>
+        <div id="msg">Notto - Meeting detected</div>
+      </div>
+    </div>
+    <div id="legal">
+      Make sure you get consent from all participants to record and transcribe.
+    </div>
+    <div class="button-group">
+      <button class="primary" id="start">Start AI meeting notes</button>
+      <button class="secondary" id="dismiss">Dismiss</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const start = document.getElementById('start');
+      const dismiss = document.getElementById('dismiss');
+      start.addEventListener('click', async () => { try { await window.electronAPI.promptStart(); } catch (e) { } });
+      dismiss.addEventListener('click', async () => { try { await window.electronAPI.promptDismiss(15 * 60 * 1000); } catch (e) { } });
+    })();
+  </script>
+</body>
+
+</html>

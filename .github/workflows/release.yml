@@ -1,0 +1,181 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+
+# NOTE: We use GH_TOKEN (Personal Access Token) instead of GITHUB_TOKEN
+# because we're publishing to a DIFFERENT repo (notto-releases)
+# The default GITHUB_TOKEN only has access to the current repo
+
+jobs:
+  # ====================
+  # Windows Build
+  # ====================
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if npm ci; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "npm ci failed after ${attempt} attempts"
+              exit 1
+            fi
+
+            echo "npm ci failed on attempt ${attempt}; retrying in 20s..."
+            sleep 20
+          done
+
+      # electron-builder signs with CSC_LINK / CSC_KEY_PASSWORD. Without the secrets the build is unsigned.
+      - name: Prepare Windows code signing
+        shell: pwsh
+        env:
+          WIN_CERT_PFX_BASE64: ${{ secrets.WIN_CERT_PFX_BASE64 }}
+          WIN_CERT_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
+        run: |
+          if (-not $env:WIN_CERT_PFX_BASE64) {
+            Write-Host "No signing certificate configured; building unsigned."
+            exit 0
+          }
+          $certPath = Join-Path $env:RUNNER_TEMP "windows-signing.pfx"
+          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:WIN_CERT_PFX_BASE64))
+          "CSC_LINK=$certPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "CSC_KEY_PASSWORD=$env:WIN_CERT_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Without this, the installer ships without win-mic-watcher.exe and meeting detection never starts.
+      - name: Build Windows Mic Watcher Helper
+        run: npm run build:win-helper
+
+      - name: Build Production
+        run: npm run build:prod
+
+      - name: Rebuild Native Modules
+        run: npm run rebuild:native
+
+      - name: Copy Native Modules
+        run: npm run copy:native
+
+      - name: Build & Publish Windows
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope
+
+  # ====================
+  # macOS Build
+  # ====================
+  build-macos:
+    runs-on: macos-latest
+    env:
+      # Disable automatic code signing discovery for ad-hoc signing
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if npm ci; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "npm ci failed after ${attempt} attempts"
+              exit 1
+            fi
+
+            echo "npm ci failed on attempt ${attempt}; retrying in 20s..."
+            sleep 20
+          done
+
+      - name: Build Mac Helper
+        run: npm run build:mac-helper
+
+      - name: Build Production
+        run: npm run build:prod
+
+      - name: Rebuild Native Modules
+        run: npm run rebuild:native
+
+      - name: Copy Native Modules
+        run: npm run copy:native
+
+      - name: Build & Publish macOS
+        run: npx electron-builder --mac --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope
+
+  # ====================
+  # Linux Build
+  # ====================
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if npm ci; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "npm ci failed after ${attempt} attempts"
+              exit 1
+            fi
+
+            echo "npm ci failed on attempt ${attempt}; retrying in 20s..."
+            sleep 20
+          done
+
+      - name: Build Production
+        run: npm run build:prod
+
+      - name: Rebuild Native Modules
+        run: npm run rebuild:native
+
+      - name: Copy Native Modules
+        run: npm run copy:native
+
+      - name: Build & Publish Linux
+        run: npx electron-builder --linux --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # PAT with repo scope

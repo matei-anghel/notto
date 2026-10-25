@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Notto - Your AI-Powered Notes Companion</title>
+    <meta name="description"
+        content="Download Notto for Windows, macOS, or Linux. Free and open source (GPL-3.0) AI note-taking, dictation and meeting assistant. No account needed.">
+    <link rel="stylesheet" href="/download/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="/logos/logo%20white.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="logo-container">
+                <img src="/logos/logo%20white.png" alt="Notto Logo" class="logo">
+            </div>
+            <h1>Download Notto</h1>
+            <p class="tagline">Free and open source. No account needed: bring your own API keys or run local models. Available for Windows, macOS, and Linux</p>
+        </header>
+
+        <!-- Download Section -->
+        <main class="download-section">
+
+            <a href="#" id="downloadBtn" class="download-btn">
+                <svg class="download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span id="downloadBtnText">Download Now</span>
+            </a>
+
+            <p class="version-info" id="versionInfo">Loading version info...</p>
+
+            <div class="other-platforms">
+                <p>Other platforms:</p>
+                <div class="platform-links" id="platformLinks">
+                    <a href="#" id="winLink" class="platform-link">Windows (.exe)</a>
+                    <a href="#" id="macLink" class="platform-link">macOS (.dmg)</a>
+                    <a href="#" id="linuxLink" class="platform-link">Linux (.AppImage)</a>
+                </div>
+            </div>
+
+            <a href="https://github.com/matei-anghel/notto-releases/releases" target="_blank" class="releases-link"
+                id="releasesLink">
+                View all releases on GitHub →
+            </a>
+            <a href="https://github.com/matei-anghel/notto" target="_blank" rel="noopener" class="releases-link" id="sourceLink">
+                View source on GitHub (GPL-3.0) →
+            </a>
+        </main>
+
+        <!-- macOS Tahoe Guide -->
+        <section class="security-guide" id="macTahoeGuide">
+            <h2>🛡️ How to Install on macOS (Tahoe & Later)</h2>
+            <p class="guide-intro">Newer macOS versions may show a "damaged" warning. This is a common security check
+                for new apps. Here's how to fix it in 30 seconds:</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Fix "Damaged" Warning</h3>
+                        <p>If you see a message saying "Notto is damaged", <strong>do not</strong> move it to the Trash.
+                            Click "Cancel".</p>
+                        <div class="step-image-placeholder" data-image="mac-tahoe-step1.png">
+                            <img src="/download/images/mac-tahoe-step1.png" alt="macOS damaged warning"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-tahoe-step1.png</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Run Terminal Command</h3>
+                        <p>Open <strong>Terminal</strong> (search for it in Spotlight) and paste the following command,
+                            then press Enter:</p>
+                        <div class="code-block-container">
+                            <pre><code>xattr -r -d com.apple.quarantine /Applications/Notto.app</code></pre>
+                            <button class="copy-btn" aria-label="Copy command">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <p class="step-note" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
+                            This is a one-time setup. Future updates will install automatically.
+                        </p>
+                        <div class="step-image-placeholder" data-image="mac-tahoe-step2.png">
+                            <img src="/download/images/mac-tahoe-step2.png" alt="Terminal command"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-tahoe-step2.png</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Grant Accessibility</h3>
+                        <p>When prompted, click "Open System Settings" and toggle the switch for <strong>Notto</strong>
+                            to allow accessibility access. This is required for meeting summaries.</p>
+                        <div class="step-image-placeholder" data-image="mac-tahoe-step3.png">
+                            <img src="/download/images/mac-tahoe-step3.png" alt="macOS Accessibility access"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-tahoe-step3.png</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="guide-footer" style="margin-top: 20px; text-align: center; font-size: 0.85rem;">
+                <a href="#" onclick="showGuideForPlatform('macos-legacy'); return false;"
+                    style="color: var(--text-secondary);">Using macOS Sequoia or earlier? Click here.</a>
+            </p>
+        </section>
+
+        <!-- Windows Security Guide -->
+        <section class="security-guide" id="windowsGuide">
+            <h2>🛡️ How to Install on Windows</h2>
+            <p class="guide-intro">Windows may show a security warning because this app is rather new. Don't worry—it's
+                safe and secure! Here's how to proceed:</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Click "More info"</h3>
+                        <p>When you see "Windows protected your PC", click the "More info" link.</p>
+                        <div class="step-image-placeholder" data-image="win-step1.png">
+                            <img src="/download/images/win-step1.png" alt="Windows SmartScreen - More info"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: win-step1.png</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Click "Run anyway"</h3>
+                        <p>After clicking "More info", the "Run anyway" button will appear. Click it to proceed.</p>
+                        <div class="step-image-placeholder" data-image="win-step2.png">
+                            <img src="/download/images/win-step2.png" alt="Windows SmartScreen - Run anyway"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: win-step2.png</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Complete Installation</h3>
+                        <p>The installer will now run normally. Follow the prompts to install Notto.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- macOS Legacy Security Guide -->
+        <section class="security-guide" id="macLegacyGuide">
+            <h2>🛡️ How to Install on macOS (Sequoia & Earlier)</h2>
+            <p class="guide-intro">Older macOS versions may show a security warning for new apps. Here's how to proceed:
+            </p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Security Warning</h3>
+                        <p>When you try to open Notto, macOS may show a warning. Click "OK" to dismiss it.</p>
+                        <div class="step-image-placeholder" data-image="mac-step1.jpeg">
+                            <img src="/download/images/mac-step1.jpeg" alt="macOS security warning"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-step1.jpeg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Open Privacy & Security</h3>
+                        <p>Go to <strong>System Settings</strong> > <strong>Privacy & Security</strong> and scroll down
+                            to the Security section.</p>
+                        <div class="step-image-placeholder" data-image="mac-step2.jpeg">
+                            <img src="/download/images/mac-step2.jpeg" alt="macOS Privacy & Security settings"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-step2.jpeg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Click "Open Anyway"</h3>
+                        <p>Click the "Open Anyway" button next to Notto, then click "Open" in the confirmation dialog.
+                        </p>
+                        <div class="step-image-placeholder" data-image="mac-step3.jpeg">
+                            <img src="/download/images/mac-step3.jpeg" alt="macOS Open Anyway button"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-step3.jpeg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Confirm with Password</h3>
+                        <p>Enter your system password or use Touch ID to authorize the app. Notto will now open!</p>
+                        <div class="step-image-placeholder" data-image="mac-step4.png">
+                            <img src="/download/images/mac-step4.png" alt="macOS password confirmation"
+                                onerror="this.parentElement.classList.add('missing')">
+                            <span class="placeholder-text">Screenshot: mac-step4.png</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="guide-footer" style="margin-top: 20px; text-align: center; font-size: 0.85rem;">
+                <a href="#" onclick="showGuideForPlatform('macos-tahoe'); return false;"
+                    style="color: var(--text-secondary);">Using macOS Tahoe or newer? Click here.</a>
+            </p>
+        </section>
+
+
+        <!-- Linux Guide (minimal) -->
+        <section class="security-guide" id="linuxGuide">
+            <h2>🐧 How to Run on Linux</h2>
+            <p class="guide-intro">Make the AppImage executable and run it:</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Make executable</h3>
+                        <div class="code-block-container">
+                            <pre><code>chmod +x Notto-*.AppImage</code></pre>
+                            <button class="copy-btn" aria-label="Copy command">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Run the app</h3>
+                        <div class="code-block-container">
+                            <pre><code>./Notto-*.AppImage</code></pre>
+                            <button class="copy-btn" aria-label="Copy command">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2026 <a href="https://github.com/matei-anghel/notto" target="_blank" rel="noopener">Notto contributors</a>. Licensed under GPL-3.0.</p>
+        </footer>
+    </div>
+
+    <script src="/download/script.js"></script>
+</body>
+
+</html>

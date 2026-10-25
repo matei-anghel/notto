@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="src/styles.css" />
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: transparent;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fade {
+      animation: fadeout 1.5s ease forwards;
+    }
+
+    @keyframes fadeout {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #9ca3af;
+      display: inline-block;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.8
+      }
+
+      50% {
+        transform: scale(1.4);
+        opacity: 1
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0.8
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="toast" class="toast fade">
+    <span id="icon"></span>
+    <span id="text">Dictation</span>
+    <audio id="tone" preload="auto"></audio>
+  </div>
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search)
+      const kind = params.get('k') || 'start'
+      const audio = params.get('a') === '1'
+      const vol = Math.max(0, Math.min(1, Number(params.get('v') || '0.4')))
+      const vis = params.get('vis') === '1'
+      const icon = document.getElementById('icon')
+      const text = document.getElementById('text')
+      const tone = document.getElementById('tone')
+      if (kind === 'start') {
+        icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-7"/><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/></svg>'
+        text.textContent = 'Listening…'
+      } else {
+        icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>'
+        text.textContent = 'Stopped'
+      }
+      if (!vis) document.getElementById('toast').style.display = 'none'
+      if (audio) {
+        const beepWebAudio = () => {
+          const AC = window.AudioContext || window.webkitAudioContext
+          if (!AC) throw new Error('No AudioContext')
+          const ctx = new AC()
+          const now = ctx.currentTime
+
+          // Main body oscillator and filters
+          const osc = ctx.createOscillator()
+          const hp = ctx.createBiquadFilter()
+          const lp = ctx.createBiquadFilter()
+          const gain = ctx.createGain()
+
+          // Subtle tactile transient (short bandpassed noise)
+          const noise = ctx.createBufferSource()
+          const nb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate)
+          const ch = nb.getChannelData(0)
+          for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * 0.9
+          noise.buffer = nb
+          const bpf = ctx.createBiquadFilter()
+          const nGain = ctx.createGain()
+
+          const baseAmp = Math.max(0.005, Math.min(0.12, vol * 0.5))
+
+          // Tone shaping
+          try { osc.type = 'sine' } catch { }
+          try { hp.type = 'highpass'; hp.frequency.value = 60; hp.Q.value = 0.707 } catch { }
+          try { lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.707 } catch { }
+          try { bpf.type = 'bandpass'; bpf.frequency.value = 1200; bpf.Q.value = 2.0 } catch { }
+
+          // Routing
+          osc.connect(hp).connect(lp).connect(gain).connect(ctx.destination)
+          noise.connect(bpf).connect(nGain).connect(ctx.destination)
+
+          // Initial levels
+          gain.gain.setValueAtTime(0.0001, now)
+          nGain.gain.setValueAtTime(0.0001, now)
+
+          if (kind === 'start') {
+            // Start: low–high two-tone chirp (440 Hz, gap, 660 Hz)
+            const t1 = 0.11, gap = 0.06, t2 = 0.15
+            osc.frequency.setValueAtTime(440, now)
+            gain.gain.exponentialRampToValueAtTime(baseAmp, now + 0.010)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + t1)
+
+            osc.frequency.setValueAtTime(660, now + t1 + gap)
+            gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, baseAmp * 0.9), now + t1 + gap + 0.010)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + t1 + gap + t2)
+
+            // Subtle tick at onset
+            nGain.gain.exponentialRampToValueAtTime(Math.min(0.16, baseAmp * 1.6), now + 0.006)
+            nGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
+
+            osc.start(now)
+            noise.start(now)
+            osc.stop(now + t1 + gap + t2 + 0.05)
+            noise.stop(now + 0.06)
+          } else {
+            // Stop: high–low two-tone chirp (700 Hz -> 440 Hz)
+            const t1 = 0.09, gap = 0.04, t2 = 0.12
+            osc.frequency.setValueAtTime(700, now)
+            gain.gain.exponentialRampToValueAtTime(baseAmp * 0.9, now + 0.010)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + t1)
+
+            osc.frequency.setValueAtTime(440, now + t1 + gap)
+            gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, baseAmp * 0.8), now + t1 + gap + 0.010)
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + t1 + gap + t2)
+
+            // Softer tick
+            nGain.gain.exponentialRampToValueAtTime(Math.min(0.12, baseAmp * 1.2), now + 0.006)
+            nGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04)
+
+            osc.start(now)
+            noise.start(now)
+            osc.stop(now + t1 + gap + t2 + 0.05)
+            noise.stop(now + 0.05)
+          }
+        }
+        try {
+          beepWebAudio()
+        } catch {
+          const up = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAABAACAgICA//8AAP//AA=='
+          const down = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAABAAD///8A////AIAAAACAAQ=='
+          tone.volume = vol
+          if (kind === 'start') {
+            tone.src = up
+            tone.play().catch(() => { })
+            setTimeout(() => { try { tone.src = up; tone.play().catch(() => { }) } catch { } }, 170)
+          } else {
+            tone.src = down
+            tone.play().catch(() => { })
+          }
+        }
+      }
+    })()
+  </script>
+</body>
+
+</html>

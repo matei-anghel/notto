@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notto Setup</title>
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;">
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0d1015;
+            --panel: #161b22;
+            --panel-2: #0f141a;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f4f7fb;
+            --muted: #9ba7b5;
+            --accent: #f7f4ea;
+            --accent-text: #0c0f13;
+            --danger: #ff7b72;
+            --success: #3fb950;
+            --warning: #e3b341;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            background:
+                radial-gradient(circle at top left, rgba(63, 185, 80, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(227, 179, 65, 0.10), transparent 24%),
+                linear-gradient(180deg, #0a0d12 0%, #10151d 100%);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .shell {
+            width: min(920px, 100%);
+            background: rgba(12, 16, 21, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+        }
+
+        .titlebar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+            -webkit-app-region: drag;
+        }
+
+        .window-controls {
+            display: flex;
+            -webkit-app-region: no-drag;
+        }
+
+        .window-control {
+            width: 46px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+        }
+
+        .window-control.close:hover { background: #e81123; color: white; }
+        .window-control:hover { background: rgba(255, 255, 255, 0.08); }
+        body.platform-macos .window-controls { display: none; }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .hero-mark {
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 24px;
+            min-height: 100%;
+        }
+
+        .hero-mark img {
+            width: 88px;
+            height: 88px;
+            object-fit: contain;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .hero-mark h1 {
+            font-size: 18px;
+            margin: 0 0 8px;
+        }
+
+        .hero-mark p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .wizard {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 24px;
+        }
+
+        .step-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .step-pill {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--panel-2);
+            padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 28px 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .step-pill.current { border-color: rgba(255,255,255,0.24); }
+        .step-pill.done { border-color: rgba(63, 185, 80, 0.45); }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.08);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .step-pill.done .step-number {
+            background: rgba(63, 185, 80, 0.22);
+            color: #9be9a8;
+        }
+
+        .step-pill h3 {
+            margin: 0 0 4px;
+            font-size: 14px;
+        }
+
+        .step-pill p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .step-state {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: capitalize;
+        }
+
+        .detail-card {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.03);
+            padding: 22px;
+            min-height: 260px;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .detail-card h2 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .detail-card .summary {
+            margin: 0 0 10px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #d6dee8;
+        }
+
+        .detail-card .detail {
+            margin: 0 0 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--warning);
+        }
+
+        .status-dot.healthy { background: var(--success); }
+        .status-dot.degraded { background: var(--warning); }
+        .status-dot.unknown { background: var(--danger); }
+
+        .helper-note {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .footer-copy {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 860px) {
+            .hero { grid-template-columns: 1fr; }
+            .shell { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="titlebar">
+            <div class="window-controls">
+                <button class="window-control" id="win-min" title="Minimize">_</button>
+                <button class="window-control" id="win-max" title="Maximize">□</button>
+                <button class="window-control close" id="win-close" title="Close">✕</button>
+            </div>
+        </div>
+
+        <div class="hero">
+            <aside class="hero-mark">
+                <img src="logos/logo white.png" alt="Notto">
+                <h1>Set up Notto on macOS</h1>
+                <p id="wizardIntroCopy">Finish the required setup once, then Notto stays out of your way.</p>
+            </aside>
+
+            <section class="wizard">
+                <div id="stepList" class="step-list"></div>
+
+                <div class="detail-card">
+                    <div class="eyebrow" id="detailEyebrow">Step</div>
+                    <h2 id="detailTitle">Loading setup…</h2>
+                    <div class="status-chip">
+                        <span id="detailHealthDot" class="status-dot"></span>
+                        <span id="detailStatusText">Checking current setup</span>
+                    </div>
+                    <p id="detailSummary" class="summary"></p>
+                    <p id="detailBody" class="detail"></p>
+                    <div id="detailHelper" class="helper-note" style="display:none;"></div>
+                    <div class="actions">
+                        <button id="primaryActionBtn" class="btn btn-primary">Continue</button>
+                        <button id="secondaryActionBtn" class="btn btn-secondary">Open macOS settings</button>
+                        <button id="finishSetupBtn" class="btn btn-primary" style="display:none;">Finish setup</button>
+                        <button id="restartBtn" class="btn btn-secondary" style="display:none;">Restart Notto now</button>
+                    </div>
+                    <div class="footer">
+                        <div id="footerCopy" class="footer-copy">When macOS opens System Settings, finish the step there, then come back and click the check button.</div>
+                        <button id="resetSetupBtn" class="btn btn-secondary">Start setup over</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="dist/permissions.js"></script>
+</body>
+</html>
